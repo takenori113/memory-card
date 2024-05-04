@@ -14,7 +14,7 @@ const connection = mysql.createConnection({
   // 本番環境では環境変数を使うようにする
   password: "example",
   // SQLインジェクション対策
-  // stringifyObjects: true,
+  stringifyObjects: true,
 });
 
 app.use(express.static("public"));
@@ -56,14 +56,18 @@ app.post("/memory", (req, res) => {
     question: req.body.question,
     answer: req.body.answer,
   };
-  connection.query("INSERT INTO memory SET ?", newWord, (error, results) => {
-    if (error) {
-      console.log(error);
-      res.status(500).send("error");
-      return;
+  connection.query(
+    "INSERT INTO memory (status,question,answer) values(?,?,?)",
+    [newWord.status, newWord.question, newWord.answer],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send("error");
+        return;
+      }
+      res.send("ok");
     }
-    res.send("ok");
-  });
+  );
 });
 
 app.put("/memory/:memoryId", (req, res) => {
