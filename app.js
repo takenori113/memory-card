@@ -14,7 +14,7 @@ const connection = mysql.createConnection({
   // 本番環境では環境変数を使うようにする
   password: "example",
   // SQLインジェクション対策
-  stringifyObjects: true,
+  // stringifyObjects: true,
 });
 
 app.use(express.static("public"));
@@ -49,6 +49,63 @@ app.get("/memory", (req, res) => {
   );
 });
 
+app.post("/memory", (req, res) => {
+  console.log(req.body);
+  const newWord = {
+    status: req.body.status,
+    question: req.body.question,
+    answer: req.body.answer,
+  };
+  connection.query("INSERT INTO memory SET ?", newWord, (error, results) => {
+    if (error) {
+      console.log(error);
+      res.status(500).send("error");
+      return;
+    }
+    res.send("ok");
+  });
+});
+
+app.put("/memory/:memoryId", (req, res) => {
+  console.log(req.params);
+  const memoryId = req.params.memoryId;
+  console.log(req.body);
+  const word = {
+    status: req.body.status,
+    question: req.body.question,
+    answer: req.body.answer,
+  };
+  connection.query(
+    "update memory set question =?,answer= ? ,status=? where id = ? and deleted_at is Null",
+    [word.question, word.answer, word.status, memoryId],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send("error");
+        return;
+      }
+      res.send("ok");
+    }
+  );
+});
+
+app.delete("/memory/:memoryId", (req, res) => {
+  console.log(req.params);
+  const memoryId = req.params.memoryId;
+  console.log(req.body);
+  connection.query(
+    "update memory set deleted_at = ? where id = ?",
+    [new Date(), memoryId],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send("error");
+        return;
+      }
+      res.send("ok");
+    }
+  );
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
