@@ -4,7 +4,6 @@ const inputAnswerRef = document.querySelector("#answer");
 const addButtonRef = document.querySelector("#addButton");
 const url = "http://localhost:3000";
 const listShowButton = document.querySelector("#list-show-button");
-var isShowWordList = "false";
 var onShowAnswer = true;
 var random = 0;
 const wordListRef = document.querySelector("#word-list");
@@ -17,18 +16,31 @@ const handleGetItems = async () => {
   console.log("クライアント" + registeredWords[0].answer);
   wordListRef.innerHTML = ""; // 以前の内容をクリア
   registeredWords.forEach((word) => {
-    const div = document.createElement("div");
-    div.className = "word-list-item";
-    div.innerHTML = `
-    <dev class="word-list" id = "word_${word.id}">
-      <p>単語: ${word.question}, 意味: ${word.answer}</p>
-      <div class="word-editors">
-        <button onclick="handleEditItem('${word.id}')">編集</button>
-        <button onclick="handleDeleteItem('${word.id}')">削除</button>
-      </div>
-      </dev>
-    `;
-    wordListRef.appendChild(div);
+    const wordListItemRef = document.createElement("div");
+    wordListItemRef.className = "word-list-item";
+    wordListItemRef.innerText = `単語：${word.question} 意味：${word.answer}`;
+    wordListRef.appendChild(wordListItemRef);
+
+    const wordEditorsRef = document.createElement("dev");
+    wordEditorsRef.className = "word-editors";
+    wordEditorsRef.id = `word_${word.id}`;
+    wordListItemRef.appendChild(wordEditorsRef);
+
+    const editButtonRef = document.createElement("button");
+    editButtonRef.className = "edit-Button";
+    editButtonRef.textContent = "編集";
+    editButtonRef.addEventListener("click", () => {
+      handleEditItem(word.id);
+    });
+    wordEditorsRef.appendChild(editButtonRef);
+
+    const deleteButtonRef = document.createElement("button");
+    deleteButtonRef.className = "delete-button";
+    deleteButtonRef.textContent = "削除";
+    deleteButtonRef.addEventListener("click", () => {
+      handleDeleteItem(word.id);
+    });
+    wordEditorsRef.appendChild(deleteButtonRef);
   });
 };
 
@@ -64,12 +76,10 @@ addButtonRef.addEventListener("click", async () => {
 
 //単語一覧の表示・非表示の切り替え
 const ShowWordList = () => {
-  if (!isShowWordList) {
+  if (wordListRef.classList.contains("hidden")) {
     wordListRef.classList.remove("hidden");
-    isShowWordList = true;
   } else {
     wordListRef.classList.add("hidden");
-    isShowWordList = false;
   }
 };
 
@@ -88,9 +98,14 @@ const handleEditItem = async (id) => {
     <input type="text" id="edit-question_${id}" />
     <label for="answer">単語の意味:</label>
     <input type="text" id="edit-answer_${id}" />
-  </div>
-  <button id="UpdateButton" onclick="updateWord('${id}')">更新</button>`;
+  </div>`;
     wordRef.appendChild(editPart);
+    const updateButton = document.createElement("button");
+    updateButton.textContent = "更新";
+    updateButton.addEventListener("click", () => {
+      updateWord(id);
+    });
+    editPart.appendChild(updateButton);
   } else {
     const editPartRef = document.querySelector(`#edit_${id}`);
     editPartRef.remove();
