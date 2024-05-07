@@ -4,10 +4,10 @@ const inputAnswerRef = document.querySelector("#answer");
 const addButtonRef = document.querySelector("#addButton");
 const url = "http://localhost:3000";
 const listShowButton = document.querySelector("#list-show-button");
-var onShowAnswer = true;
-var random = 0;
+let onShowAnswer = true;
+let random = 0;
 const wordListRef = document.querySelector("#word-list");
-var registeredWords = [];
+let registeredWords = [];
 
 //データベースの単語を取得
 const handleGetItems = async () => {
@@ -90,23 +90,31 @@ listShowButton.addEventListener("click", () => {
 //単語の編集
 const handleEditItem = async (id) => {
   const wordRef = document.querySelector(`#word_${id}`);
-  if (wordRef.childElementCount < 3) {
+  if (!wordRef.querySelector(`#edit_${id}`)) {
+    // 既に編集部分が存在しない場合のみ追加
     const editPart = document.createElement("div");
+    editPart.className = "edit-part";
     editPart.id = `edit_${id}`;
-    editPart.innerHTML = `<div>
-    <label for="question">英単語:</label>
-    <input type="text" id="edit-question_${id}" />
-    <label for="answer">単語の意味:</label>
-    <input type="text" id="edit-answer_${id}" />
-  </div>`;
+    editPart.innerHTML = `
+      <div class="input-field">
+        <label for="edit-question_${id}">英単語:</label>
+        <input type="text" id="edit-question_${id}" class="edit-input" />
+      </div>
+      <div class="input-field">
+        <label for="edit-answer_${id}">単語の意味:</label>
+        <input type="text" id="edit-answer_${id}" class="edit-input" />
+      </div>`;
     wordRef.appendChild(editPart);
+
     const updateButton = document.createElement("button");
+    updateButton.className = "update-button";
     updateButton.textContent = "更新";
     updateButton.addEventListener("click", () => {
       updateWord(id);
     });
     editPart.appendChild(updateButton);
   } else {
+    // 既に存在する場合は削除
     const editPartRef = document.querySelector(`#edit_${id}`);
     editPartRef.remove();
   }
