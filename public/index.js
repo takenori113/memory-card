@@ -13,7 +13,6 @@ let registeredWords = [];
 const handleGetItems = async () => {
   const res = await fetch(`${url}/memory`);
   registeredWords = await res.json();
-  console.log("クライアント" + registeredWords[0].answer);
   wordListRef.innerHTML = ""; // 以前の内容をクリア
   registeredWords.forEach((word) => {
     const wordListItemRef = document.createElement("div");
