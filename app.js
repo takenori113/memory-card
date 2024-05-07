@@ -1,9 +1,6 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-var app = express();
+const express = require("express");
+const logger = require("morgan");
+const app = express();
 const port = 3000;
 const mysql = require("mysql");
 
@@ -18,13 +15,9 @@ const connection = mysql.createConnection({
 });
 
 app.use(express.static("public"));
-
 app.use(logger("tiny"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// app.use(function (req, res, next) {
-//   next(createError(404));
-// });
 
 connection.connect((err) => {
   if (err) {
@@ -115,4 +108,3 @@ app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
 
-// module.exports = app;
