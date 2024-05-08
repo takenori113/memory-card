@@ -4,15 +4,20 @@ const app = express();
 const port = 3000;
 const mysql = require("mysql");
 
+require("dotenv").config();
+
 const connection = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  database: "db",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
   // 本番環境では環境変数を使うようにする
-  password: "example",
+  password: process.env.DB_PASSWORD,
   // SQLインジェクション対策
   stringifyObjects: true,
 });
+
+
+console.log(process.env.DB_PASSWORD)
 
 app.use(express.static("public"));
 app.use(logger("tiny"));
