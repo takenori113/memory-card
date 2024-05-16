@@ -1,29 +1,114 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var app = express();
+const express = require("express");
+const logger = require("morgan");
+const app = express();
+const port = 3000;
+const mysql = require("mysql");
+
+require("dotenv").config();
+
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  // 本番環境では環境変数を使うようにする
+  password: process.env.DB_PASSWORD,
+  // SQLインジェクション対策
+  stringifyObjects: true,
+});
+
+
+console.log(process.env.DB_PASSWORD)
 
 app.use(express.static("public"));
-app.use(logger('dev'));
+app.use(logger("tiny"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+connection.connect((err) => {
+  if (err) {
+    console.log("error connecting: " + err.stack);
+    return;
+  }
+  console.log("success");
 });
 
-module.exports = app;
+app.get("/memory", (req, res) => {
+  connection.query(
+    "SELECT * FROM memory WHERE deleted_at IS NULL",
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send("error");
+        return;
+      }
+      console.log(results);
+      res.json(results);
+    }
+  );
+});
+
+app.post("/memory", (req, res) => {
+  console.log(req.body);
+  const newWord = {
+    status: req.body.status,
+    question: req.body.question,
+    answer: req.body.answer,
+  };
+  connection.query(
+    "INSERT INTO memory (status,question,answer) values(?,?,?)",
+    [newWord.status, newWord.question, newWord.answer],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send("error");
+        return;
+      }
+      res.send("ok");
+    }
+  );
+});
+
+app.put("/memory/:memoryId", (req, res) => {
+  console.log(req.params);
+  const memoryId = req.params.memoryId;
+  console.log(req.body);
+  const word = {
+    status: req.body.status,
+    question: req.body.question,
+    answer: req.body.answer,
+  };
+  connection.query(
+    "update memory set question =?,answer= ? ,status=? where id = ? and deleted_at is Null",
+    [word.question, word.answer, word.status, memoryId],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send("error");
+        return;
+      }
+      res.send("ok");
+    }
+  );
+});
+
+app.delete("/memory/:memoryId", (req, res) => {
+  console.log(req.params);
+  const memoryId = req.params.memoryId;
+  console.log(req.body);
+  connection.query(
+    "update memory set deleted_at = ? where id = ?",
+    [new Date(), memoryId],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send("error");
+        return;
+      }
+      res.send("ok");
+    }
+  );
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
+});
